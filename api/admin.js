@@ -1,4 +1,4 @@
-import { authDb, hashPassword, verifyPassword, createSession, clearSessionCookie, requireAdminResponse, destroySession } from './_auth.js';
+import { authDb } from './_auth.js';
 
 function cleanLogin(value){ return String(value||'').trim().toLowerCase(); }
 function cleanPassword(value){ return String(value||''); }
