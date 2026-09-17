@@ -38,11 +38,7 @@ export default async function handler(req,res){
       return res.status(200).json({ok:true});
     }
 
-    if(req.method==='GET' && action==='me'){
-      const auth=await requireAdminResponse(req,res);
-      if(!auth) return;
-      return res.status(200).json({ok:true,admin:auth.admin});
-    }
+    
 
     if(req.method==='GET' && action==='list'){
       const auth=await requireAdminResponse(req,res,['owner']);
