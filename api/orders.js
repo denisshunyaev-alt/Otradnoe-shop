@@ -1,12 +1,8 @@
 import { neon } from '@neondatabase/serverless';
+import { requireAdminResponse } from './_auth.js';
 
 async function db(){
-  if(!process.env.DATABASE_URL){
-    throw new Error('DATABASE_URL не настроен');
-  }
-
   const sql=neon(process.env.DATABASE_URL);
-
   await sql`CREATE TABLE IF NOT EXISTS orders (
     id BIGSERIAL PRIMARY KEY,
     number BIGINT NOT NULL,
@@ -18,104 +14,24 @@ async function db(){
     status TEXT NOT NULL DEFAULT 'Новый',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`;
-
   return sql;
 }
-
 export default async function handler(req,res){
-  // Запрещаем кэшировать список заказов
-  res.setHeader('Cache-Control','no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-  res.setHeader('Pragma','no-cache');
-  res.setHeader('Expires','0');
-
   try{
     const sql=await db();
-
+    const auth=await requireAdminResponse(req,res);
+    if(!auth) return;
     if(req.method==='GET'){
-      const rows=await sql`
-        SELECT id,number,name,phone,pickup,items,total,status,created_at
-        FROM orders
-        ORDER BY created_at DESC
-        LIMIT 200
-      `;
-
-      return res.status(200).json({
-        ok:true,
-        orders:rows.map(r=>({
-          id:Number(r.id),
-          number:Number(r.number),
-          name:r.name,
-          phone:r.phone,
-          pickup:r.pickup,
-          items:r.items,
-          total:Number(r.total),
-          status:r.status,
-          createdAt:new Date(r.created_at).toLocaleString('ru-RU')
-        }))
-      });
+      const rows=await sql`SELECT id,number,name,phone,pickup,items,total,status,created_at FROM orders ORDER BY created_at DESC LIMIT 200`;
+      return res.status(200).json({ok:true,orders:rows.map(r=>({id:Number(r.id),number:Number(r.number),name:r.name,phone:r.phone,pickup:r.pickup,items:r.items,total:Number(r.total),status:r.status,createdAt:new Date(r.created_at).toLocaleString('ru-RU')}))});
     }
-
     if(req.method==='PATCH'){
       const {id,status}=req.body||{};
-
-      const allowed=[
-        'Новый',
-        'Собирается',
-        'Готов к выдаче',
-        'Выдан',
-        'Отменён'
-      ];
-
-      if(!id || !allowed.includes(status)){
-        return res.status(400).json({
-          ok:false,
-          error:'Некорректный статус'
-        });
-      }
-
-      const rows=await sql`
-        UPDATE orders
-        SET status=${status}
-        WHERE id=${Number(id)}
-        RETURNING id,number,name,phone,pickup,items,total,status,created_at
-      `;
-
-      if(!rows.length){
-        return res.status(404).json({
-          ok:false,
-          error:'Заказ не найден'
-        });
-      }
-
-      const r=rows[0];
-
-      return res.status(200).json({
-        ok:true,
-        order:{
-          id:Number(r.id),
-          number:Number(r.number),
-          name:r.name,
-          phone:r.phone,
-          pickup:r.pickup,
-          items:r.items,
-          total:Number(r.total),
-          status:r.status,
-          createdAt:new Date(r.created_at).toLocaleString('ru-RU')
-        }
-      });
+      const allowed=['Новый','Собирается','Готов к выдаче','Выдан','Отменён'];
+      if(!id||!allowed.includes(status)) return res.status(400).json({ok:false,error:'Некорректный статус'});
+      await sql`UPDATE orders SET status=${status} WHERE id=${Number(id)}`;
+      return res.status(200).json({ok:true});
     }
-
-    return res.status(405).json({
-      ok:false,
-      error:'Method not allowed'
-    });
-
-  }catch(e){
-    console.error(e);
-
-    return res.status(500).json({
-      ok:false,
-      error:e.message||'Ошибка базы данных'
-    });
-  }
+    return res.status(405).json({ok:false,error:'Method not allowed'});
+  }catch(e){console.error(e);return res.status(500).json({ok:false,error:e.message||'Ошибка базы данных'});}
 }

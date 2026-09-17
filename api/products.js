@@ -1,4 +1,5 @@
 import { neon } from '@neondatabase/serverless';
+import { requireAdminResponse } from './_auth.js';
 
 const seed = [
   {id:1,name:'Картофель',cat:'Овощи',price:120,unit:'кг',stock:100,note:'Продажа по килограммам',icon:'🥔',photo:'',weight:'',enabled:true},
@@ -39,6 +40,8 @@ export default async function handler(req,res){
       return res.status(200).json({ok:true,source:rows.length?'db':'seed',products:rows.length?rows.map(rowToProduct):seed});
     }
     if(req.method!=='POST') return res.status(405).json({ok:false,error:'Method not allowed'});
+    const auth=await requireAdminResponse(req,res);
+    if(!auth) return;
     const body=req.body||{};
     if(body.action==='bulk'){
       const products=Array.isArray(body.products)?body.products:[];

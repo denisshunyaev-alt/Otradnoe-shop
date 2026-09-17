@@ -1,7 +1,10 @@
 import { handleUpload } from '@vercel/blob/client';
+import { requireAdminResponse } from './_auth.js';
 
 export default async function handler(request, response) {
   try {
+    const auth = await requireAdminResponse(request, response);
+    if (!auth) return;
     const body = await request.json();
     const jsonResponse = await handleUpload({
       body,
