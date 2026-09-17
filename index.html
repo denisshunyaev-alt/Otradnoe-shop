@@ -35,9 +35,47 @@ function openCart(){document.getElementById('modal').classList.add('show');rende
 function closeModal(){document.getElementById('modal').classList.remove('show')}
 function renderCart(){const items=cartItems(); if(!items.length){document.getElementById('sheet').innerHTML='<button class="close" onclick="closeModal()">×</button><h2>Корзина</h2><p class="muted">Корзина пока пустая.</p>';return} const total=items.reduce((s,x)=>s+x.p.price*x.q,0); document.getElementById('sheet').innerHTML='<button class="close" onclick="closeModal()">×</button><h2>Корзина</h2>'+items.map(x=>`<div class="line"><div><b>${x.p.name}</b><div class="muted">${fmt(x.p.price)} / ${x.p.unit}</div></div><div class="qty"><button onclick="change(${x.p.id},-1)">−</button><b>${x.q}</b><button onclick="change(${x.p.id},1)">+</button></div></div>`).join('')+`<div class="total"><span>Итого</span><span>${fmt(total)}</span></div><button class="primary" onclick="checkout()">Оформить заказ</button>`}
 function change(id,d){cart[id]=(cart[id]||0)+d;if(cart[id]<=0)delete cart[id];updateCount();renderCart()}
-function checkout(){document.getElementById('sheet').innerHTML='<button class="close" onclick="renderCart()">×</button><h2>Оформление заказа</h2><div class="field"><label>Ваше имя</label><input id="name" placeholder="Например, Алексей"></div><div class="field"><label>Телефон</label><input id="phone" placeholder="+7 900 000-00-00" inputmode="tel"></div><div class="confirm"><b>Самовывоз</b><br><span class="muted">Москва, Олонецкая, 18</span></div><button class="primary" onclick="confirmOrder()">Проверить заказ</button><button class="secondary" onclick="renderCart()">Назад</button>'}
+function checkout(){document.getElementById('sheet').innerHTML='<button class="close" onclick="renderCart()">×</button><h2>Оформление заказа</h2><div class="field"><label>Ваше имя</label><input id="name" placeholder="Например, Алексей"></div><div class="field"><label>Телефон</label><input id="phone" value="+7 " placeholder="+7 900 000-00-00" inputmode="tel"></div><div class="confirm"><b>Самовывоз</b><br><span class="muted">Москва, Олонецкая, 18</span></div><button class="primary" onclick="confirmOrder()">Проверить заказ</button><button class="secondary" onclick="renderCart()">Назад</button>'}
 function confirmOrder(){const name=document.getElementById('name').value.trim(),phone=document.getElementById('phone').value.trim();if(!name||!phone){alert('Введите имя и телефон');return}const items=cartItems(),total=items.reduce((s,x)=>s+x.p.price*x.q,0);document.getElementById('sheet').innerHTML='<button class="close" onclick="checkout()">×</button><h2>Проверьте заказ</h2><div class="confirm"><b>'+name+'</b><br>'+phone+'<hr><b>Самовывоз:</b> Москва, Олонецкая, 18<hr>'+items.map(x=>`${x.p.name} — ${x.q} ${x.p.unit} · ${fmt(x.p.price*x.q)}`).join('<br>')+'<hr><b>Итого: '+fmt(total)+'</b></div><button class="primary" onclick="submitOrder()">Подтвердить заказ</button><button class="secondary" onclick="checkout()">Изменить</button>'}
 function submitOrder(){const num=1042+Math.floor(Math.random()*900);cart={};updateCount();document.getElementById('sheet').innerHTML='<div class="success"><div class="big">✅</div><h2>Заказ №'+num+' принят</h2><p>Мы получили ваш заказ. Заберите его самовывозом по адресу:</p><p><b>Москва, Олонецкая, 18</b></p><p class="muted">Оплата — при получении.</p><button class="primary" onclick="closeModal()">Вернуться в каталог</button></div>'}
 document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});renderCats();renderProducts();updateCount();
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const phone = document.querySelector('#phone');
+  if (!phone) return;
+
+  const formatPhone = () => {
+    let digits = phone.value.replace(/\D/g, '');
+    if (digits.startsWith('8')) digits = '7' + digits.slice(1);
+    if (!digits.startsWith('7')) digits = '7' + digits;
+    digits = digits.slice(0, 11);
+
+    let out = '+7';
+    const rest = digits.slice(1);
+    if (rest.length) out += ' ' + rest.slice(0, 3);
+    if (rest.length > 3) out += ' ' + rest.slice(3, 6);
+    if (rest.length > 6) out += '-' + rest.slice(6, 8);
+    if (rest.length > 8) out += '-' + rest.slice(8, 10);
+    phone.value = out;
+  };
+
+  phone.addEventListener('focus', () => {
+    if (!phone.value.trim()) phone.value = '+7 ';
+    phone.setSelectionRange(phone.value.length, phone.value.length);
+  });
+
+  phone.addEventListener('input', formatPhone);
+  phone.addEventListener('keydown', (e) => {
+    if ((e.key === 'Backspace' || e.key === 'Delete') &&
+        phone.selectionStart <= 3 && phone.selectionEnd <= 3) {
+      e.preventDefault();
+    }
+  });
+
+  formatPhone();
+});
+</script>
+
 </body></html>
