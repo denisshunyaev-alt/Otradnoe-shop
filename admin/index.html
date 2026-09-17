@@ -1,99 +1,61 @@
-<!doctype html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Админка · Овощи и фрукты Отрадное</title>
-<style>
-*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f6f2;color:#202820}.wrap{max-width:1100px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0 20px}.brand{font-weight:850;font-size:20px}.muted{color:#6e786f;font-size:14px}.btn{border:0;border-radius:12px;padding:11px 15px;font-weight:800;cursor:pointer;background:#e8ece5}.btn.primary{background:#1f6b45;color:#fff}.btn.danger{background:#f7dddd;color:#9a2525}.btn:disabled{opacity:.6;cursor:wait}.panel{background:#fff;border:1px solid #e0e5dc;border-radius:20px;padding:18px;margin-bottom:16px}.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:16px}.tab{border:1px solid #d9dfd7;background:#fff;border-radius:999px;padding:10px 15px;white-space:nowrap;cursor:pointer}.tab.active{background:#1f6b45;color:#fff}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.product{border:1px solid #e0e5dc;border-radius:18px;padding:14px}.row{display:flex;gap:12px;justify-content:space-between;align-items:flex-start}.thumb{width:90px;height:90px;border-radius:14px;background:#edf0e8;display:grid;place-items:center;font-size:44px;overflow:hidden;flex:0 0 auto}.thumb img{width:100%;height:100%;object-fit:cover}.product h3{margin:0 0 5px}.meta{font-size:13px;color:#737c74;line-height:1.45}.price{font-size:18px;font-weight:850;margin:9px 0}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.field{margin:10px 0}.field label{display:block;font-size:13px;color:#687269;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;padding:12px;border:1px solid #d8ded6;border-radius:11px;font:inherit;background:#fff}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.modal{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;justify-content:center;padding:12px;z-index:20}.modal.show{display:flex}.sheet{width:min(620px,100%);max-height:94vh;overflow:auto;background:#fff;border-radius:24px;padding:20px}.sheethead{display:flex;justify-content:space-between;align-items:center}.close{border:0;background:#edf0ea;width:36px;height:36px;border-radius:10px;font-size:20px;cursor:pointer}.check{display:flex;align-items:center;gap:8px;margin:10px 0}.empty{text-align:center;padding:30px;color:#707970}.order{border:1px solid #e0e5dc;border-radius:16px;padding:14px;margin:10px 0}.status{font-weight:800}.status select{padding:8px;border-radius:9px;border:1px solid #d8ded6}.notice{background:#edf7ee;border:1px solid #cde2d0;padding:12px;border-radius:13px;font-size:13px;line-height:1.45;margin-bottom:16px}.loading{padding:30px;text-align:center;color:#6f786f}.loginbox{min-height:100vh;display:none;align-items:center;justify-content:center;padding:20px}.loginbox.show{display:flex}.login{width:min(420px,100%);background:#fff;border:1px solid #e0e5dc;border-radius:24px;padding:24px;box-shadow:0 12px 40px #00000012}.login h1{margin:0 0 8px;font-size:25px}.small{font-size:12px;color:#788178}.userbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.adminbox{margin-top:16px}.adminrow{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid #edf0ea;padding:12px 0}.adminrow:first-child{border-top:0}.role{font-size:12px;background:#edf2ec;padding:5px 8px;border-radius:999px}.statusoff{opacity:.55}
-@media(max-width:700px){.grid,.formgrid{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.thumb{width:78px;height:78px}}
-</style>
-</head>
-<body>
-<div id="loginBox" class="loginbox show"><div class="login"><h1>Вход в админ-панель</h1><div class="muted">Овощи и фрукты Отрадное</div><div class="field"><label>Логин</label><input id="loginName" autocomplete="username"></div><div class="field"><label>Пароль</label><input id="loginPassword" type="password" autocomplete="current-password"></div><button id="loginBtn" class="btn primary" style="width:100%" onclick="loginAdmin()">Войти</button><div id="loginError" class="small" style="margin-top:10px"></div></div></div><div id="adminApp" class="wrap" style="display:none">
-<header class="top"><div><div class="brand">🥕 Админ-панель</div><div class="muted">Овощи и фрукты Отрадное</div></div><div class="userbar"><span id="whoami" class="muted"></span><button class="btn" onclick="changeMyPassword()">Сменить пароль</button><button class="btn" onclick="logoutAdmin()">Выйти</button><button class="btn" onclick="location.href='/'">Открыть магазин</button></div></header>
-<div class="notice">Каталог теперь хранится в общей базе. Изменения товаров и остатков видят все пользователи магазина.</div>
-<div class="tabs"><button id="tabProducts" class="tab active" onclick="showTab('products')">Товары</button><button id="tabOrders" class="tab" onclick="showTab('orders')">Заказы</button></div>
-<section id="productsView"><div class="panel"><div class="row"><div><h2 style="margin:0 0 4px">Каталог</h2><div class="muted">Добавляйте товары, меняйте цены, остатки и фото.</div></div><button class="btn primary" onclick="openProduct()">+ Добавить товар</button></div></div><div id="productsGrid" class="grid"><div class="loading">Загружаем каталог…</div></div></section>
-<section id="ordersView" style="display:none"><div class="panel"><h2 style="margin:0 0 4px">Заказы</h2><div class="muted">Все заказы хранятся в общей базе.</div><div id="orders"><div class="loading">Загружаем заказы…</div></div></div></section><section id="adminsView" class="panel adminbox" style="display:none"><div class="row"><div><h2 style="margin:0 0 4px">Администраторы</h2><div class="muted">Владелец может добавлять и отключать аккаунты.</div></div></div><div class="formgrid"><div class="field"><label>Новый логин</label><input id="newAdminLogin" autocomplete="off" placeholder="Например, manager"></div><div class="field"><label>Пароль</label><input id="newAdminPassword" type="password" autocomplete="new-password" placeholder="Минимум 10 символов"></div></div><button class="btn primary" onclick="createAdmin()">+ Добавить администратора</button><div id="adminsList" style="margin-top:10px"></div></section>
-</div>
-<div class="modal" id="modal"><div class="sheet"><div class="sheethead"><h2 id="modalTitle" style="margin:0">Товар</h2><button class="close" onclick="closeModal()">×</button></div>
-<div class="field"><label>Название</label><input id="pName"></div>
-<div class="formgrid"><div class="field"><label>Цена, ₽</label><input id="pPrice" type="number" min="0"></div><div class="field"><label>Единица продажи</label><select id="pUnit"><option>кг</option><option>коробка</option><option>упаковка</option><option>штука</option><option>ящик</option><option>пачка</option></select></div></div>
-<div class="formgrid"><div class="field"><label>Остаток</label><input id="pStock" type="number" min="0" step="0.1"></div><div class="field"><label>Категория</label><select id="pCat"><option>Овощи</option><option>Фрукты</option><option>Масло</option><option>Заморозка</option><option>Рыба</option><option>Сладости</option></select></div></div>
-<div class="field"><label>Вес в коробке/упаковке, кг — если применимо</label><input id="pWeight" type="number" min="0" step="0.1" placeholder="Например, 10.5"></div>
-<div class="field"><label>Примечание</label><textarea id="pNote" rows="3" placeholder="Например: в коробке 10–11 кг"></textarea></div>
-<div class="field"><label>Фото</label><input id="pPhoto" type="file" accept="image/jpeg,image/png,image/webp"><div id="photoHint" class="muted" style="margin-top:6px">До 5 МБ. Фото загружается в Vercel Blob.</div></div>
-<label class="check"><input id="pEnabled" type="checkbox" checked> Товар доступен покупателям</label>
-<div class="actions"><button id="saveBtn" class="btn primary" onclick="saveProduct()">Сохранить</button><button class="btn" onclick="closeModal()">Отмена</button><button id="deleteBtn" class="btn danger" onclick="deleteProduct()" style="display:none">Удалить товар</button></div>
-</div></div>
 <script type="module">
 import { upload } from 'https://esm.sh/@vercel/blob/client';
 
-let currentAdmin=null;
-async function authApi(url,options={}){
-const r=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
-  const data=await r.json().catch(()=>({}));
-  if(r.status===401){ showLogin(); throw new Error('Сессия завершена. Войдите снова.'); }
-  if(!r.ok||data.ok===false) throw new Error(data.error||'Ошибка сервера');
-  return data;
-}
-function showLogin(message=''){ document.getElementById('adminApp').style.display='none';document.getElementById('loginBox').classList.add('show');document.getElementById('loginError').textContent=message;document.getElementById('loginPassword').focus(); }
-function showApp(){ document.getElementById('loginBox').classList.remove('show');document.getElementById('adminApp').style.display='block';document.getElementById('whoami').textContent=currentAdmin.login+' · '+(currentAdmin.role==='owner'?'владелец':'администратор');document.getElementById('adminsView').style.display=currentAdmin.role==='owner'?'block':'none'; }
-window.loginAdmin=async function(){ const btn=document.getElementById('loginBtn');btn.disabled=true;btn.textContent='Входим…';document.getElementById('loginError').textContent='';try{const data=await authApi('/api/admin?action=login',{method:'POST',body:JSON.stringify({action:'login',login:document.getElementById('loginName').value,password:document.getElementById('loginPassword').value})});currentAdmin=data.admin;showApp();await load();if(currentAdmin.role==='owner')await loadAdmins();}catch(e){document.getElementById('loginError').textContent=e.message||'Не удалось войти';}finally{btn.disabled=false;btn.textContent='Войти';}};
-window.logoutAdmin=async function(){try{await fetch('/api/admin?action=logout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'})});}finally{currentAdmin=null;showLogin('Вы вышли из админ-панели.');}};
-window.changeMyPassword=async function(){const p=prompt('Новый пароль (минимум 10 символов):');if(p===null)return;try{const data=await authApi('/api/admin?action=changePassword',{method:'POST',body:JSON.stringify({action:'changePassword',password:p})});if(data.loggedOut)showLogin('Пароль изменён. Войдите снова.');}catch(e){alert(e.message);}};
-window.createAdmin=async function(){const login=document.getElementById('newAdminLogin').value.trim();const password=document.getElementById('newAdminPassword').value;if(!login||!password){alert('Укажите логин и пароль');return;}try{await authApi('/api/admin?action=create',{method:'POST',body:JSON.stringify({action:'create',login,password})});document.getElementById('newAdminLogin').value='';document.getElementById('newAdminPassword').value='';await loadAdmins();alert('Администратор добавлен.');}catch(e){alert(e.message);}};
-window.toggleAdmin=async function(id,login,active){if(!confirm((active?'Отключить':'Включить')+' администратора '+login+'?'))return;try{await authApi('/api/admin?action=toggle',{method:'POST',body:JSON.stringify({action:'toggle',id})});await loadAdmins();}catch(e){alert(e.message);}};
-window.resetAdminPassword=async function(id,login){const p=prompt('Новый пароль для '+login+' (минимум 10 символов):');if(p===null)return;try{await authApi('/api/admin?action=changePassword',{method:'POST',body:JSON.stringify({action:'changePassword',id,password:p})});alert('Пароль изменён.');}catch(e){alert(e.message);}};
-async function loadAdmins(){const data=await authApi('/api/admin?action=list');document.getElementById('adminsList').innerHTML=data.admins.map(a=>`<div class="adminrow ${a.active?'':'statusoff'}"><div><b>${esc(a.login)}</b> <span class="role">${a.role==='owner'?'владелец':'администратор'}</span><div class="small">${a.active?'активен':'отключён'}</div></div><div class="actions" style="margin-top:0"><button class="btn" onclick="resetAdminPassword(${a.id},'${esc(a.login)}')">Пароль</button>${a.role!=='owner'?`<button class="btn" onclick="toggleAdmin(${a.id},'${esc(a.login)}',${a.active})">${a.active?'Отключить':'Включить'}</button>`:''}</div></div>`).join('')||'<div class="empty">Администраторов пока нет.</div>';}
-async function boot(){try{const data=await fetch('/api/admin?action=me').then(r=>r.json());if(data.ok){currentAdmin=data.admin;showApp();await load();if(currentAdmin.role==='owner')await loadAdmins();}}catch(e){showLogin();}}
+async function api(url,options={}){
 
-const seed=[
-{id:1,name:'Картофель',cat:'Овощи',price:120,unit:'кг',stock:100,note:'Продажа по килограммам',icon:'🥔',photo:'',weight:'',enabled:true},
-{id:2,name:'Помидоры',cat:'Овощи',price:700,unit:'коробка',stock:20,note:'В коробке 10–11 кг',icon:'🍅',photo:'',weight:'10.5',enabled:true},
-{id:3,name:'Масло белорусское',cat:'Масло',price:1200,unit:'кг',stock:30,note:'Продажа по килограммам',icon:'🧈',photo:'',weight:'',enabled:true},
-{id:4,name:'Минтай заморозка',cat:'Заморозка',price:1200,unit:'коробка',stock:20,note:'Продажа коробками',icon:'🐟',photo:'',weight:'',enabled:true},
-{id:5,name:'Форель свежая',cat:'Рыба',price:1800,unit:'кг',stock:30,note:'Рыба примерно 5–6 кг',icon:'🐠',photo:'',weight:'5.5',enabled:true},
-{id:6,name:'Зефир',cat:'Сладости',price:600,unit:'коробка',stock:20,note:'Коробка 5 кг',icon:'🍬',photo:'',weight:'5',enabled:true}
-];
-let products=[];let editId=null;
-const fmt=n=>Number(n||0).toLocaleString('ru-RU')+' ₽';
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-async function api(url,options={}){return authApi(url,options)}
+ const r=await fetch(url,{
+   headers:{
+     'Content-Type':'application/json',
+     ...(options.headers||{})
+   },
+   ...options
+ });
+
+ const data=await r.json().catch(()=>({}));
+
+ if(!r.ok || data.ok===false){
+   throw new Error(data.error || 'Ошибка сервера');
+ }
+
+ return data;
+}
+
+
+let products=[];
+let editId=null;
+
+
+const fmt=n=>Number(n||0)
+ .toLocaleString('ru-RU')+' ₽';
+
+
+const esc=v=>String(v??'')
+.replace(/[&<>"']/g,m=>({
+ '&':'&amp;',
+ '<':'&lt;',
+ '>':'&gt;',
+ '"':'&quot;',
+ "'":'&#039;'
+}[m]));
+
+
 async function load(){
-  try{
-    const data=await api('/api/products');
-    const local=JSON.parse(localStorage.getItem('otradnoe_products')||'null');
-    if(data.source==='seed' && Array.isArray(local) && local.length){
-      products=await migrateLocal(local);
-    }else{products=data.products;}
-    render();
-  }catch(e){console.error(e);document.getElementById('productsGrid').innerHTML='<div class="empty">Не удалось загрузить каталог. '+esc(e.message)+'</div>';}
+
+ try{
+
+   const data=await api('/api/products');
+
+   products=data.products || [];
+
+   render();
+
+ }catch(e){
+
+   console.error(e);
+
+   document.getElementById('productsGrid').innerHTML=
+   '<div class="empty">'+esc(e.message)+'</div>';
+
+ }
+
 }
-async function migrateLocal(local){
-  const migrated=[];
-  for(const p of local){
-    const copy={...p};
-    if(typeof copy.photo==='string'&&copy.photo.startsWith('data:image/')){
-      try{copy.photo=await uploadDataUrl(copy.photo,p.id);}catch(e){console.error('Фото миграция',e);copy.photo='';}
-    }
-    migrated.push(copy);
-  }
-  const data=await api('/api/products',{method:'POST',body:JSON.stringify({action:'bulk',products:migrated})});
-  return data.products;
-}
-async function uploadDataUrl(dataUrl,id){const [head,b64]=dataUrl.split(',');const mime=(head.match(/data:(.*?);base64/)||[])[1]||'image/jpeg';const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));const blob=new Blob([bytes],{type:mime});const ext=mime.split('/')[1]||'jpg';const result=await upload(`products/${id}-${Date.now()}.${ext}`,blob,{access:'public',handleUploadUrl:'/api/blob-upload',multipart:true});return result.url;}
-async function uploadFile(file,id){if(file.size>5000000)throw new Error('Фото слишком большое. Выберите файл до 5 МБ.');const result=await upload(`products/${id}-${Date.now()}-${file.name}`,file,{access:'public',handleUploadUrl:'/api/blob-upload',multipart:true});return result.url;}
-function render(){const g=document.getElementById('productsGrid');g.innerHTML=products.map(p=>`<article class="product"><div class="row"><div class="thumb">${p.photo?`<img src="${esc(p.photo)}" alt="">`:p.icon||'🛒'}</div><div style="flex:1"><h3>${esc(p.name)}</h3><div class="meta">${esc(p.cat)} · ${esc(p.unit)}${p.weight?` · ${esc(p.weight)} кг/уп.`:''}<br>Остаток: <b>${p.stock}</b> · ${p.enabled?'доступен':'скрыт'}</div><div class="price">${fmt(p.price)} / ${esc(p.unit)}</div></div></div><div class="actions"><button class="btn primary" onclick="openProduct(${p.id})">Изменить</button><button class="btn" onclick="toggleProduct(${p.id})">${p.enabled?'Скрыть':'Включить'}</button></div></article>`).join('')||'<div class="empty">Товаров пока нет.</div>'}
-window.openProduct=function(id=null){editId=id;const p=id?products.find(x=>x.id===id):{name:'',price:'',unit:'кг',stock:0,cat:'Овощи',weight:'',note:'',photo:'',enabled:true};document.getElementById('modalTitle').textContent=id?'Редактировать товар':'Новый товар';document.getElementById('pName').value=p.name||'';document.getElementById('pPrice').value=p.price??'';document.getElementById('pUnit').value=p.unit||'кг';document.getElementById('pStock').value=p.stock??0;document.getElementById('pCat').value=p.cat||'Овощи';document.getElementById('pWeight').value=p.weight||'';document.getElementById('pNote').value=p.note||'';document.getElementById('pEnabled').checked=p.enabled!==false;document.getElementById('photoHint').textContent=p.photo?'Фото уже загружено. Новое заменит его.':'До 5 МБ. Фото загружается в Vercel Blob.';document.getElementById('pPhoto').value='';document.getElementById('deleteBtn').style.display=id?'inline-block':'none';document.getElementById('modal').classList.add('show')};
-window.closeModal=function(){document.getElementById('modal').classList.remove('show')};
-window.saveProduct=async function(){const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Сохраняем…';try{const current=editId?products.find(x=>x.id===editId):null;const data={id:editId||Date.now(),name:document.getElementById('pName').value.trim(),price:Number(document.getElementById('pPrice').value),unit:document.getElementById('pUnit').value,stock:Number(document.getElementById('pStock').value),cat:document.getElementById('pCat').value,weight:document.getElementById('pWeight').value,note:document.getElementById('pNote').value.trim(),enabled:document.getElementById('pEnabled').checked,icon:current?.icon||'🛒',photo:current?.photo||''};if(!data.name||!data.price){alert('Укажите название и цену');return}const file=document.getElementById('pPhoto').files[0];if(file)data.photo=await uploadFile(file,data.id);const out=await api('/api/products',{method:'POST',body:JSON.stringify({action:'upsert',product:data})});if(editId){products=products.map(x=>x.id===editId?out.product:x)}else products.push(out.product);localStorage.setItem('otradnoe_products',JSON.stringify(products));render();closeModal();}catch(e){alert(e.message||'Не удалось сохранить товар')}finally{btn.disabled=false;btn.textContent='Сохранить'}};
-window.toggleProduct=async function(id){try{const out=await api('/api/products',{method:'POST',body:JSON.stringify({action:'toggle',id})});products=products.map(x=>x.id===id?out.product:x);localStorage.setItem('otradnoe_products',JSON.stringify(products));render()}catch(e){alert(e.message)}};
-window.deleteProduct=async function(){if(!editId)return;if(!confirm('Удалить этот товар?'))return;try{await api('/api/products',{method:'POST',body:JSON.stringify({action:'delete',id:editId})});products=products.filter(x=>x.id!==editId);localStorage.setItem('otradnoe_products',JSON.stringify(products));closeModal();render()}catch(e){alert(e.message)}};
-window.showTab=function(tab){document.getElementById('productsView').style.display=tab==='products'?'block':'none';document.getElementById('ordersView').style.display=tab==='orders'?'block':'none';document.getElementById('tabProducts').classList.toggle('active',tab==='products');document.getElementById('tabOrders').classList.toggle('active',tab==='orders');if(tab==='orders')loadOrders()};
-async function loadOrders(){const el=document.getElementById('orders');el.innerHTML='<div class="loading">Загружаем заказы…</div>';try{const data=await api('/api/orders');el.innerHTML=data.orders.length?data.orders.map(o=>`<div class="order"><div class="row"><b>Заказ №${o.number}</b><span class="status"><select onchange="setOrderStatus(${o.id},this.value)"><option ${o.status==='Новый'?'selected':''}>Новый</option><option ${o.status==='Собирается'?'selected':''}>Собирается</option><option ${o.status==='Готов к выдаче'?'selected':''}>Готов к выдаче</option><option ${o.status==='Выдан'?'selected':''}>Выдан</option><option ${o.status==='Отменён'?'selected':''}>Отменён</option></select></span></div><div class="meta" style="margin-top:8px">${esc(o.name)} · ${esc(o.phone)}<br>${esc(o.createdAt)}<br>${(o.items||[]).map(x=>esc(x.name)+' — '+esc(x.quantity)+' '+esc(x.unit)).join('<br>')}<br><b>${fmt(o.total)}</b></div></div>`).join(''):'<div class="empty">Заказов пока нет.</div>'}catch(e){el.innerHTML='<div class="empty">Не удалось загрузить заказы: '+esc(e.message)+'</div>'}}
-window.setOrderStatus=async function(id,status){try{await api('/api/orders',{method:'PATCH',body:JSON.stringify({id,status})})}catch(e){alert(e.message);loadOrders()}};
-document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
-boot();
-</script>
-</body></html>
