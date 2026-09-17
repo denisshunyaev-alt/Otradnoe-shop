@@ -86,7 +86,9 @@ export async function createSession(sql, adminId, res){
   const expires = new Date(Date.now()+SESSION_DAYS*24*60*60*1000);
   await sql`DELETE FROM admin_sessions WHERE expires_at < NOW()`;
   await sql`INSERT INTO admin_sessions (admin_id,token_hash,expires_at) VALUES (${Number(adminId)},${tokenHash},${expires.toISOString()})`;
-  res.setHeader('Set-Cookie', ['otradnoe_admin=${encodeURIComponent(token)}; Path=/; Max-Age=${SESSION_DAYS*24*60*60}; HttpOnly; Secure; SameSite=Lax']);
+  res.setHeader('Set-Cookie', [
+  `otradnoe_admin=${encodeURIComponent(token)}; Path=/; Max-Age=${SESSION_DAYS*24*60*60}; HttpOnly; Secure; SameSite=Lax`
+]);
 }
 
 export async function requireAdmin(req,res,roles=[]){
