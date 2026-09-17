@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Админка · Овощи и фрукты Отрадное</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f6f2;color:#202820}.wrap{max-width:1100px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0 20px}.brand{font-weight:850;font-size:20px}.muted{color:#6e786f;font-size:14px}.btn{border:0;border-radius:12px;padding:11px 15px;font-weight:800;cursor:pointer;background:#e8ece5}.btn.primary{background:#1f6b45;color:#fff}.btn.danger{background:#f7dddd;color:#9a2525}.panel{background:#fff;border:1px solid #e0e5dc;border-radius:20px;padding:18px;margin-bottom:16px}.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:16px}.tab{border:1px solid #d9dfd7;background:#fff;border-radius:999px;padding:10px 15px;white-space:nowrap;cursor:pointer}.tab.active{background:#1f6b45;color:#fff}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.product{border:1px solid #e0e5dc;border-radius:18px;padding:14px}.row{display:flex;gap:12px;justify-content:space-between;align-items:flex-start}.thumb{width:90px;height:90px;border-radius:14px;background:#edf0e8;display:grid;place-items:center;font-size:44px;overflow:hidden;flex:0 0 auto}.thumb img{width:100%;height:100%;object-fit:cover}.product h3{margin:0 0 5px}.meta{font-size:13px;color:#737c74;line-height:1.45}.price{font-size:18px;font-weight:850;margin:9px 0}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.field{margin:10px 0}.field label{display:block;font-size:13px;color:#687269;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;padding:12px;border:1px solid #d8ded6;border-radius:11px;font:inherit;background:#fff}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.modal{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;justify-content:center;padding:12px;z-index:20}.modal.show{display:flex}.sheet{width:min(620px,100%);max-height:94vh;overflow:auto;background:#fff;border-radius:24px;padding:20px}.sheethead{display:flex;justify-content:space-between;align-items:center}.close{border:0;background:#edf0ea;width:36px;height:36px;border-radius:10px;font-size:20px;cursor:pointer}.check{display:flex;align-items:center;gap:8px;margin:10px 0}.empty{text-align:center;padding:30px;color:#707970}.order{border:1px solid #e0e5dc;border-radius:16px;padding:14px;margin:10px 0}.status{font-weight:800}.status select{padding:8px;border-radius:9px;border:1px solid #d8ded6}.notice{background:#fff7df;border:1px solid #eadca9;padding:12px;border-radius:13px;font-size:13px;line-height:1.45}
+@media(max-width:700px){.grid,.formgrid{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.thumb{width:78px;height:78px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><div><div class="brand">🥕 Админ-панель</div><div class="muted">Овощи и фрукты Отрадное</div></div><button class="btn" onclick="location.href='/'">Открыть магазин</button></header>
+<div class="notice">Сейчас каталог хранится без базы данных — изменения этой версии сохраняются в браузере администратора. Для общей синхронизации между устройствами позже подключим постоянное хранилище.</div>
+<div class="tabs"><button id="tabProducts" class="tab active" onclick="showTab('products')">Товары</button><button id="tabOrders" class="tab" onclick="showTab('orders')">Заказы</button></div>
+<section id="productsView">
+<div class="panel"><div class="row"><div><h2 style="margin:0 0 4px">Каталог</h2><div class="muted">Добавляйте товары, меняйте цены, остатки и фото.</div></div><button class="btn primary" onclick="openProduct()">+ Добавить товар</button></div></div>
+<div id="productsGrid" class="grid"></div>
+</section>
+<section id="ordersView" style="display:none"><div class="panel"><h2 style="margin:0 0 4px">Заказы</h2><div class="muted">Здесь будет удобный список заказов, полученных через Telegram.</div><div id="orders"></div></div></section>
+</div>
+<div class="modal" id="modal"><div class="sheet"><div class="sheethead"><h2 id="modalTitle" style="margin:0">Товар</h2><button class="close" onclick="closeModal()">×</button></div>
+<div class="field"><label>Название</label><input id="pName"></div>
+<div class="formgrid"><div class="field"><label>Цена, ₽</label><input id="pPrice" type="number" min="0"></div><div class="field"><label>Единица продажи</label><select id="pUnit"><option>кг</option><option>коробка</option><option>упаковка</option><option>штука</option><option>ящик</option><option>пачка</option></select></div></div>
+<div class="formgrid"><div class="field"><label>Остаток</label><input id="pStock" type="number" min="0" step="0.1"></div><div class="field"><label>Категория</label><select id="pCat"><option>Овощи</option><option>Фрукты</option><option>Масло</option><option>Заморозка</option><option>Рыба</option><option>Сладости</option></select></div></div>
+<div class="field"><label>Вес в коробке/упаковке, кг — если применимо</label><input id="pWeight" type="number" min="0" step="0.1" placeholder="Например, 10.5"></div>
+<div class="field"><label>Примечание</label><textarea id="pNote" rows="3" placeholder="Например: в коробке 10–11 кг"></textarea></div>
+<div class="field"><label>Фото</label><input id="pPhoto" type="file" accept="image/*"><div id="photoHint" class="muted" style="margin-top:6px"></div></div>
+<label class="check"><input id="pEnabled" type="checkbox" checked> Товар доступен покупателям</label>
+<div class="actions"><button class="btn primary" onclick="saveProduct()">Сохранить</button><button class="btn" onclick="closeModal()">Отмена</button><button id="deleteBtn" class="btn danger" onclick="deleteProduct()" style="display:none">Удалить товар</button></div>
+</div></div>
+<script>
+const seed=[
+{id:1,name:'Картофель',cat:'Овощи',price:120,unit:'кг',stock:100,note:'Продажа по килограммам',icon:'🥔',photo:'',weight:'' ,enabled:true},
+{id:2,name:'Помидоры',cat:'Овощи',price:700,unit:'коробка',stock:20,note:'В коробке 10–11 кг',icon:'🍅',photo:'',weight:'10.5',enabled:true},
+{id:3,name:'Масло белорусское',cat:'Масло',price:1200,unit:'кг',stock:30,note:'Продажа по килограммам',icon:'🧈',photo:'',weight:'',enabled:true},
+{id:4,name:'Минтай заморозка',cat:'Заморозка',price:1200,unit:'коробка',stock:20,note:'Продажа коробками',icon:'🐟',photo:'',weight:'',enabled:true},
+{id:5,name:'Форель свежая',cat:'Рыба',price:1800,unit:'кг',stock:30,note:'Рыба примерно 5–6 кг',icon:'🐠',photo:'',weight:'5.5',enabled:true},
+{id:6,name:'Зефир',cat:'Сладости',price:600,unit:'коробка',stock:20,note:'Коробка 5 кг',icon:'🍬',photo:'',weight:'5',enabled:true}
+];
+let products=JSON.parse(localStorage.getItem('otradnoe_products')||'null')||seed;
+let editId=null;
+const save=()=>localStorage.setItem('otradnoe_products',JSON.stringify(products));
+const fmt=n=>Number(n||0).toLocaleString('ru-RU')+' ₽';
+function showTab(tab){document.getElementById('productsView').style.display=tab==='products'?'block':'none';document.getElementById('ordersView').style.display=tab==='orders'?'block':'none';document.getElementById('tabProducts').classList.toggle('active',tab==='products');document.getElementById('tabOrders').classList.toggle('active',tab==='orders');if(tab==='orders')renderOrders()}
+function render(){const g=document.getElementById('productsGrid');g.innerHTML=products.map(p=>`<article class="product"><div class="row"><div class="thumb">${p.photo?`<img src="${p.photo}" alt="">`:p.icon||'🛒'}</div><div style="flex:1"><h3>${esc(p.name)}</h3><div class="meta">${esc(p.cat)} · ${esc(p.unit)}${p.weight?` · ${esc(p.weight)} кг/уп.`:''}<br>Остаток: <b>${p.stock}</b> · ${p.enabled?'доступен':'скрыт'}</div><div class="price">${fmt(p.price)} / ${esc(p.unit)}</div></div></div><div class="actions"><button class="btn primary" onclick="openProduct(${p.id})">Изменить</button><button class="btn" onclick="toggle(${p.id})">${p.enabled?'Скрыть':'Включить'}</button></div></article>`).join('')||'<div class="empty">Товаров пока нет.</div>'}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function openProduct(id=null){editId=id;const p=id?products.find(x=>x.id===id):{name:'',price:'',unit:'кг',stock:0,cat:'Овощи',weight:'',note:'',photo:'',enabled:true};document.getElementById('modalTitle').textContent=id?'Редактировать товар':'Новый товар';['Name','Price','Unit','Stock','Cat','Weight','Note','Enabled'].forEach(k=>{const el=document.getElementById('p'+k);if(el)el.value=k==='Enabled'?'':p[k.toLowerCase()]??''});document.getElementById('pEnabled').checked=!!p.enabled;document.getElementById('photoHint').textContent=p.photo?'Фото уже загружено. Новое заменит его.':'';document.getElementById('pPhoto').value='';document.getElementById('deleteBtn').style.display=id?'inline-block':'none';document.getElementById('modal').classList.add('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+async function saveProduct(){const data={name:document.getElementById('pName').value.trim(),price:Number(document.getElementById('pPrice').value),unit:document.getElementById('pUnit').value,stock:Number(document.getElementById('pStock').value),cat:document.getElementById('pCat').value,weight:document.getElementById('pWeight').value,note:document.getElementById('pNote').value.trim(),enabled:document.getElementById('pEnabled').checked};if(!data.name||!data.price){alert('Укажите название и цену');return}const file=document.getElementById('pPhoto').files[0];if(file){if(file.size>1200000){alert('Фото слишком большое. Выберите файл до 1,2 МБ.');return}data.photo=await fileToData(file)}else{data.photo=editId?(products.find(x=>x.id===editId)?.photo||''):''}if(editId){Object.assign(products.find(x=>x.id===editId),data)}else{products.push({id:Date.now(),icon:'🛒',...data})}save();render();closeModal()}
+function fileToData(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)})}
+function toggle(id){const p=products.find(x=>x.id===id);p.enabled=!p.enabled;save();render()}
+function deleteProduct(){if(!editId)return;if(confirm('Удалить этот товар?')){products=products.filter(x=>x.id!==editId);save();closeModal();render()}}
+function renderOrders(){const el=document.getElementById('orders');const orders=JSON.parse(localStorage.getItem('otradnoe_orders')||'[]');el.innerHTML=orders.length?orders.map((o,i)=>`<div class="order"><div class="row"><b>Заказ №${esc(o.number||i+1)}</b><span class="status"><select onchange="setOrderStatus(${i},this.value)"><option ${o.status==='Новый'?'selected':''}>Новый</option><option ${o.status==='Собирается'?'selected':''}>Собирается</option><option ${o.status==='Готов к выдаче'?'selected':''}>Готов к выдаче</option><option ${o.status==='Выдан'?'selected':''}>Выдан</option><option ${o.status==='Отменён'?'selected':''}>Отменён</option></select></span></div><div class="meta" style="margin-top:8px">${esc(o.name||'')} · ${esc(o.phone||'')}<br>${esc(o.createdAt||'')}<br>${(o.items||[]).map(x=>esc(x.name)+' — '+esc(x.quantity)+' '+esc(x.unit)).join('<br>')}<br><b>${fmt(o.total)}</b></div></div>`).join(''):'<div class="empty">Локальных заказов пока нет. Telegram-заказы пока приходят в бот.</div>'}
+function setOrderStatus(i,status){const orders=JSON.parse(localStorage.getItem('otradnoe_orders')||'[]');if(orders[i]){orders[i].status=status;localStorage.setItem('otradnoe_orders',JSON.stringify(orders));renderOrders()}}
+render();
+</script>
+</body></html>
