@@ -44,7 +44,7 @@ async function bootstrap(sql){
   await sql`INSERT INTO admins (login,password_hash,role,active) VALUES (${login},${hash},'owner',true) ON CONFLICT (login) DO NOTHING`;
 }
 
-export async function hashPassword(password){
+econsole.log(await hashPassword('12345678900'));
   const salt = randomBytes(16);
   const key = await scryptAsync(password, salt, 64, {N:16384,r:8,p:1});
   return `scrypt$16384$8$1$${salt.toString('base64url')}$${Buffer.from(key).toString('base64url')}`;
