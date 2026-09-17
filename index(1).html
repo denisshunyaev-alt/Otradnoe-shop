@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Овощи и фрукты Отрадное</title>
+<style>
+body{margin:0;font-family:Inter,Arial,sans-serif;background:#f7f7f2;color:#1f2a20}*{box-sizing:border-box}.wrap{max-width:1100px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 0}.logo{font-weight:800;font-size:21px}.sub{color:#6d766e;font-size:14px;margin-top:4px}.cart{background:#1f6b45;color:white;border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer}.hero{background:#e8f1e5;border-radius:28px;padding:34px 28px;margin:12px 0 22px}.hero h1{font-size:42px;line-height:1.02;margin:0 0 12px}.hero p{color:#536056;max-width:650px}.cats{display:flex;gap:8px;overflow:auto;padding-bottom:10px}.cat{border:1px solid #d8ded5;background:white;border-radius:999px;padding:10px 15px;white-space:nowrap;cursor:pointer}.cat.active{background:#1f6b45;color:#fff}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{background:#fff;border-radius:22px;padding:16px;border:1px solid #e3e5df}.pic{height:170px;border-radius:16px;background:#edf0e7;display:grid;place-items:center;font-size:76px}.card h3{margin:14px 0 5px}.note{font-size:13px;color:#7a817b;min-height:32px}.price{font-size:21px;font-weight:800;margin:10px 0}.add{width:100%;border:0;border-radius:12px;padding:12px;background:#f0e6c8;font-weight:800;cursor:pointer}.footer{margin:35px 0;color:#667068;font-size:14px}.modal{position:fixed;inset:0;background:#0006;display:none;align-items:flex-end;justify-content:center;padding:12px;z-index:10}.modal.show{display:flex}.sheet{background:#fff;width:min(620px,100%);max-height:92vh;overflow:auto;border-radius:26px;padding:22px}.sheet h2{margin:0 0 15px}.line{display:flex;justify-content:space-between;gap:15px;padding:12px 0;border-bottom:1px solid #eee}.qty{display:flex;align-items:center;gap:8px}.qty button,.close{border:0;background:#eef1eb;border-radius:10px;width:34px;height:34px;cursor:pointer;font-weight:800}.total{display:flex;justify-content:space-between;font-size:20px;font-weight:800;padding:18px 0}.primary{width:100%;border:0;border-radius:13px;padding:14px;background:#1f6b45;color:white;font-weight:800;cursor:pointer}.secondary{width:100%;border:0;border-radius:13px;padding:13px;background:#eef1eb;font-weight:800;cursor:pointer;margin-top:8px}.field{margin:12px 0}.field label{display:block;font-size:13px;color:#657066;margin-bottom:6px}.field input{width:100%;padding:13px;border:1px solid #d9ded7;border-radius:12px;font-size:16px}.confirm{background:#f5f7f2;border-radius:16px;padding:14px;margin:12px 0}.success{text-align:center;padding:25px 5px}.success .big{font-size:56px}.muted{color:#69736c;font-size:14px}
+@media(max-width:760px){.wrap{padding:14px}.hero h1{font-size:34px}.grid{grid-template-columns:1fr 1fr}.pic{height:130px;font-size:58px}}@media(max-width:500px){.grid{grid-template-columns:1fr}.top{align-items:flex-start}.hero{padding:26px 20px}.logo{font-size:18px}.cart{padding:10px 12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><div><div class="logo">🥕 Овощи и фрукты Отрадное</div><div class="sub">Самовывоз · Москва, Олонецкая, 18</div></div><button class="cart" onclick="openCart()">🛒 Корзина <span id="count">0</span></button></header>
+<section class="hero"><h1>Свежие продукты<br>рядом с домом</h1><p>Заказывайте заранее и забирайте покупку в магазине. Без доставки и без онлайн-оплаты.</p></section>
+<nav class="cats" id="cats"></nav><main class="grid" id="grid"></main>
+<footer class="footer">Самовывоз: Москва, Олонецкая, 18 · Оплата при получении · Минимальной суммы заказа нет · <a href="/admin/" style="color:inherit">Админ-панель</a></footer>
+</div>
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<script>
+const seedProducts=[
+{id:1,name:'Картофель',cat:'Овощи',price:120,unit:'кг',stock:100,note:'Продажа по килограммам',icon:'🥔',photo:'',weight:'',enabled:true},
+{id:2,name:'Помидоры',cat:'Овощи',price:700,unit:'коробка',stock:20,note:'В коробке 10–11 кг',icon:'🍅',photo:'',weight:'10.5',enabled:true},
+{id:3,name:'Масло белорусское',cat:'Масло',price:1200,unit:'кг',stock:30,note:'Продажа по килограммам',icon:'🧈',photo:'',weight:'',enabled:true},
+{id:4,name:'Минтай заморозка',cat:'Заморозка',price:1200,unit:'коробка',stock:20,note:'Продажа коробками',icon:'🐟',photo:'',weight:'',enabled:true},
+{id:5,name:'Форель свежая',cat:'Рыба',price:1800,unit:'кг',stock:30,note:'Рыба примерно 5–6 кг',icon:'🐠',photo:'',weight:'5.5',enabled:true},
+{id:6,name:'Зефир',cat:'Сладости',price:600,unit:'коробка',stock:20,note:'Коробка 5 кг',icon:'🍬',photo:'',weight:'5',enabled:true}];
+function loadCatalog(){ try { const raw=localStorage.getItem('otradnoe_products'); if(raw){ const parsed=JSON.parse(raw); if(Array.isArray(parsed)) return parsed; } } catch(e){} return seedProducts; }
+let products=loadCatalog();
+let cart={}; let category='Все';
+const fmt=n=>n.toLocaleString('ru-RU')+' ₽';
+function renderCats(){const cats=['Все','Овощи','Фрукты','Масло','Заморозка','Рыба','Сладости'];document.getElementById('cats').innerHTML=cats.map(c=>`<button class="cat ${c===category?'active':''}" onclick="category='${c}';renderCats();renderProducts()">${c}</button>`).join('')}
+function renderProducts(){const list=products.filter(p=>(p.enabled!==false)&&(category==='Все'||p.cat===category));document.getElementById('grid').innerHTML=list.map(p=>`<article class="card"><div class="pic">${p.photo?`<img src="${p.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:16px">`:p.icon||'🛒'}</div><h3>${p.name}</h3><div class="note">${p.note||''}${p.weight?` · ${p.weight} кг/уп.`:''}<br>Остаток: ${p.stock??'—'} ${p.unit}</div><div class="price">${fmt(p.price)} / ${p.unit}</div><button class="add" ${Number(p.stock)<=0?'disabled':''} onclick="add(${p.id})">${Number(p.stock)<=0?'Нет в наличии':'Добавить'}</button></article>`).join('')}
+function add(id){const p=products.find(x=>x.id===id);if(!p||p.enabled===false)return;const current=cart[id]||0;if(Number.isFinite(Number(p.stock))&&current>=Number(p.stock)){alert('Недостаточно товара в наличии');return}cart[id]=current+1;updateCount();openCart()}
+function updateCount(){document.getElementById('count').textContent=Object.values(cart).reduce((a,b)=>a+b,0)}
+function cartItems(){return Object.entries(cart).filter(([_,q])=>q>0).map(([id,q])=>({p:products.find(x=>x.id==id),q}))}
+function openCart(){document.getElementById('modal').classList.add('show');renderCart()}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function renderCart(){const items=cartItems(); if(!items.length){document.getElementById('sheet').innerHTML='<button class="close" onclick="closeModal()">×</button><h2>Корзина</h2><p class="muted">Корзина пока пустая.</p>';return} const total=items.reduce((s,x)=>s+x.p.price*x.q,0); document.getElementById('sheet').innerHTML='<button class="close" onclick="closeModal()">×</button><h2>Корзина</h2>'+items.map(x=>`<div class="line"><div><b>${x.p.name}</b><div class="muted">${fmt(x.p.price)} / ${x.p.unit}</div></div><div class="qty"><button onclick="change(${x.p.id},-1)">−</button><b>${x.q}</b><button onclick="change(${x.p.id},1)">+</button></div></div>`).join('')+`<div class="total"><span>Итого</span><span>${fmt(total)}</span></div><button class="primary" onclick="checkout()">Оформить заказ</button>`}
+function change(id,d){cart[id]=(cart[id]||0)+d;if(cart[id]<=0)delete cart[id];updateCount();renderCart()}
+function checkout(){document.getElementById('sheet').innerHTML='<button class="close" onclick="renderCart()">×</button><h2>Оформление заказа</h2><div class="field"><label>Ваше имя</label><input id="name" placeholder="Например, Алексей"></div><div class="field"><label>Телефон</label><input id="phone" value="+7 " placeholder="+7 900 000-00-00" inputmode="tel" autocomplete="tel"></div><div class="confirm"><b>Самовывоз</b><br><span class="muted">Москва, Олонецкая, 18</span></div><button class="primary" onclick="confirmOrder()">Проверить заказ</button><button class="secondary" onclick="renderCart()">Назад</button>';initPhoneMask()}
+let pendingOrder=null;
+function confirmOrder(){const name=document.getElementById('name').value.trim(),phone=document.getElementById('phone').value.trim();if(!name||phone.replace(/\D/g,'').length<11){alert('Введите корректное имя и телефон');return}const items=cartItems(),total=items.reduce((s,x)=>s+x.p.price*x.q,0);pendingOrder={name,phone,items,total};document.getElementById('sheet').innerHTML='<button class="close" onclick="checkout()">×</button><h2>Проверьте заказ</h2><div class="confirm"><b>'+name+'</b><br>'+phone+'<hr><b>Самовывоз:</b> Москва, Олонецкая, 18<hr>'+items.map(x=>`${x.p.name} — ${x.q} ${x.p.unit} · ${fmt(x.p.price*x.q)}`).join('<br>')+'<hr><b>Итого: '+fmt(total)+'</b></div><button class="primary" onclick="submitOrder()">Подтвердить заказ</button><button class="secondary" onclick="checkout()">Изменить</button>'}
+async function submitOrder(){
+  if(!pendingOrder){alert('Не удалось получить данные заказа. Вернитесь назад и попробуйте ещё раз.');return}
+  const {name,phone,items,total}=pendingOrder;
+
+  const button=document.querySelector('#sheet .primary');
+  if(button){button.disabled=true;button.textContent='Отправляем заказ…'}
+
+  try{
+    const response=await fetch('/api/order',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        name,
+        phone,
+        pickup:'Москва, Олонецкая, 18',
+        items:items.map(x=>({name:x.p.name,quantity:x.q,unit:x.p.unit,price:x.p.price})),
+        total
+      })
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok || !data.ok) throw new Error(data.error || 'Не удалось отправить заказ');
+
+    const num=data.orderNumber;
+    try{ const catalog=JSON.parse(localStorage.getItem('otradnoe_products')||'null')||products; items.forEach(x=>{const p=catalog.find(y=>y.id===x.p.id);if(p&&Number.isFinite(Number(p.stock)))p.stock=Math.max(0,Number(p.stock)-x.q)});localStorage.setItem('otradnoe_products',JSON.stringify(catalog)); products=catalog; }catch(e){}
+    try{ const orders=JSON.parse(localStorage.getItem('otradnoe_orders')||'[]'); orders.unshift({number:num,name,phone,items:items.map(x=>({name:x.p.name,quantity:x.q,unit:x.p.unit})),total,status:'Новый',createdAt:new Date().toLocaleString('ru-RU')}); localStorage.setItem('otradnoe_orders',JSON.stringify(orders.slice(0,100))); }catch(e){}
+    cart={};pendingOrder=null;updateCount();renderProducts();
+    document.getElementById('sheet').innerHTML='<div class="success"><div class="big">✅</div><h2>Заказ №'+num+' принят</h2><p>Мы получили ваш заказ. Заберите его самовывозом по адресу:</p><p><b>Москва, Олонецкая, 18</b></p><p class="muted">Оплата — при получении.</p><button class="primary" onclick="closeModal()">Вернуться в каталог</button></div>';
+  }catch(error){
+    if(button){button.disabled=false;button.textContent='Подтвердить заказ'}
+    alert('Не удалось отправить заказ. Попробуйте ещё раз.');
+    console.error(error);
+  }
+}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+window.addEventListener('storage',e=>{if(e.key==='otradnoe_products'){products=loadCatalog();renderCats();renderProducts();}});
+window.addEventListener('focus',()=>{const fresh=loadCatalog(); if(JSON.stringify(fresh)!==JSON.stringify(products)){products=fresh;renderCats();renderProducts();}});
+renderCats();renderProducts();updateCount();
+</script>
+
+<script>
+function initPhoneMask() {
+  const phone = document.querySelector('#phone');
+  if (!phone || phone.dataset.maskReady === '1') return;
+  phone.dataset.maskReady = '1';
+
+  const formatPhone = () => {
+    let digits = phone.value.replace(/\D/g, '');
+    if (digits.startsWith('8')) digits = '7' + digits.slice(1);
+    if (!digits.startsWith('7')) digits = '7' + digits;
+    digits = digits.slice(0, 11);
+
+    let out = '+7';
+    const rest = digits.slice(1);
+    if (rest.length) out += ' ' + rest.slice(0, 3);
+    if (rest.length > 3) out += ' ' + rest.slice(3, 6);
+    if (rest.length > 6) out += '-' + rest.slice(6, 8);
+    if (rest.length > 8) out += '-' + rest.slice(8, 10);
+    phone.value = out;
+  };
+
+  phone.addEventListener('focus', () => {
+    if (!phone.value.trim()) phone.value = '+7 ';
+    phone.setSelectionRange(phone.value.length, phone.value.length);
+  });
+
+  phone.addEventListener('input', formatPhone);
+  phone.addEventListener('keydown', (e) => {
+    if ((e.key === 'Backspace' || e.key === 'Delete') &&
+        phone.selectionStart <= 3 && phone.selectionEnd <= 3) {
+      e.preventDefault();
+    }
+  });
+
+  formatPhone();
+}
+</script>
+
+</body></html>
