@@ -10,15 +10,28 @@ export default async function handler(req,res){
     const sql=await authDb();
     const action=String(req.query?.action||req.body?.action||'me');
 
-    if(req.method==='POST' && action==='login'){
-      const login=cleanLogin(req.body?.login);
-      const password=cleanPassword(req.body?.password);
-      const rows=await sql`SELECT id,login,password_hash,role,active FROM admins WHERE login=${login} LIMIT 1`;
-      const admin=rows[0];
-      if(!admin || !admin.active || !(await verifyPassword(password,admin.password_hash))) return res.status(401).json({ok:false,error:'Неверный логин или пароль'});
-      await createSession(sql,admin.id,res);
-      return res.status(200).json({ok:true,admin:{id:Number(admin.id),login:admin.login,role:admin.role}});
-    }
+    if (req.method==='POST' && action==='login'){
+  const login=cleanLogin(req.body?.login);
+  const password=cleanPassword(req.body?.password);
+
+  const rows=await sql`SELECT id,login,password_hash,role,active FROM admins WHERE login=${login} LIMIT 1`;
+
+  const admin=rows[0];
+
+  if(!admin || !admin.active || !(await verifyPassword(password,admin.password_hash)))
+      return res.status(401).json({ok:false,error:'Неверный пароль'});
+
+  await createSession(sql,admin.id,res);
+
+  return res.status(200).json({
+      ok:true,
+      admin:{
+        id:Number(admin.id),
+        login:admin.login,
+        role:admin.role
+      }
+  });
+}
 
     if(req.method==='POST' && action==='logout'){
       await destroySession(req,res);
