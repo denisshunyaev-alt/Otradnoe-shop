@@ -41,16 +41,17 @@ export default async function handler(req, res) {
     // Сохраняем заказ в Neon
     await sql`
       INSERT INTO orders
-        (number, name, phone, pickup, items, total, status)
-      VALUES
-        (
-          ${orderNumber},
-          ${name},
-          ${pickup || 'Москва, Олонецкая, 18'},
-          ${JSON.stringify(items)},
-          ${Number(total) || 0},
-          'Новый'
-        )
+  (number, name, phone, pickup, items, total, status)
+     VALUES
+  (
+    ${orderNumber},
+    ${name},
+    ${phone},
+    ${pickup || 'Москва, Олонецкая, 18'},
+    ${JSON.stringify(items)},
+    ${Number(total) || 0},
+    'Новый'
+  )
     `;
 
     // Уменьшаем остатки товаров
