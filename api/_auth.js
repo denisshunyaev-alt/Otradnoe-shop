@@ -44,17 +44,6 @@ async function bootstrap(sql){
   await sql`INSERT INTO admins (login,password_hash,role,active) VALUES (${login},${hash},'owner',true) ON CONFLICT (login) DO NOTHING`;
 }
 
-async function bootstrap(sql){
-  const countRows = await sql`SELECT COUNT(*)::int AS count FROM admins`;
-  if(Number(countRows[0]?.count)!==0) return;
-  const login = String(process.env.ADMIN_BOOTSTRAP_LOGIN||'').trim();
-  const password = String(process.env.ADMIN_BOOTSTRAP_PASSWORD||'');
-  if(!login || !password) return;
-  if(password.length < 10) throw new Error('ADMIN_BOOTSTRAP_PASSWORD должен содержать минимум 10 символов');
-  const hash = await hashPassword(password);
-  await sql`INSERT INTO admins (login,password_hash,role,active) VALUES (${login},${hash},'owner',true) ON CONFLICT (login) DO NOTHING`;
-}
-
 
 export async function hashPassword(password){
   const salt = randomBytes(16);
