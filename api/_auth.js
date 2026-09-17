@@ -77,7 +77,7 @@ function parseCookies(req){
 }
 
 export function clearSessionCookie(res){
-  res.setHeader('Set-Cookie',['otradnoe_admin=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax']);
+  res.setHeader('Set-Cookie', ['otradnoe_admin=${encodeURIComponent(token)}; Path=/; Max-Age=${SESSION_DAYS*24*60*60}; HttpOnly; Secure; SameSite=Lax']);
 }
 
 export async function createSession(sql, adminId, res){
