@@ -44,12 +44,23 @@ async function bootstrap(sql){
   await sql`INSERT INTO admins (login,password_hash,role,active) VALUES (${login},${hash},'owner',true) ON CONFLICT (login) DO NOTHING`;
 }
 
-econsole.log(await hashPassword('12345678900'));
+async function bootstrap(sql){
+  const countRows = await sql`SELECT COUNT(*)::int AS count FROM admins`;
+  if(Number(countRows[0]?.count)!==0) return;
+  const login = String(process.env.ADMIN_BOOTSTRAP_LOGIN||'').trim();
+  const password = String(process.env.ADMIN_BOOTSTRAP_PASSWORD||'');
+  if(!login || !password) return;
+  if(password.length < 10) throw new Error('ADMIN_BOOTSTRAP_PASSWORD должен содержать минимум 10 символов');
+  const hash = await hashPassword(password);
+  await sql`INSERT INTO admins (login,password_hash,role,active) VALUES (${login},${hash},'owner',true) ON CONFLICT (login) DO NOTHING`;
+}
+
+
+export async function hashPassword(password){
   const salt = randomBytes(16);
   const key = await scryptAsync(password, salt, 64, {N:16384,r:8,p:1});
   return `scrypt$16384$8$1$${salt.toString('base64url')}$${Buffer.from(key).toString('base64url')}`;
 }
-
 export async function verifyPassword(password, encoded){
   try{
     const [algo,n,r,p,saltText,keyText] = String(encoded||'').split('$');
